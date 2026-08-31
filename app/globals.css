@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  body {
+    @apply min-w-0 bg-paper text-ink font-body antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display text-ink;
+  }
+
+  ::selection {
+    @apply bg-forest/20;
+  }
+
+  :focus-visible {
+    outline: 2px solid #3E5641;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-container px-5 sm:px-8;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-pill px-6 py-3 text-sm font-semibold transition-all duration-150 active:scale-[0.97];
+  }
+
+  .btn-primary {
+    @apply btn bg-forest text-paper shadow-[0_8px_20px_-12px_rgba(46,65,50,0.7)] hover:bg-forest-dark active:bg-forest-dark;
+  }
+
+  .btn-secondary {
+    @apply btn bg-transparent text-ink border border-ink/20 hover:border-ink/40;
+  }
+
+  .btn-clay {
+    @apply btn bg-clay text-paper hover:bg-clay-dark;
+  }
+
+  .card {
+    @apply rounded-card bg-sand/60 border border-line;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-forest;
+  }
+
+  .reveal {
+    animation: rise 0.55s ease-out both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
