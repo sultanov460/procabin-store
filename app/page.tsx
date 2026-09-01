@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getHeroProduct, getRelatedProducts, getReviews } from "@/lib/data";
+import { getHeroProduct, getRelatedProducts, usingLiveShopify } from "@/lib/data";
 import { generalFaq } from "@/content/faq";
 import { siteConfig } from "@/content/site-config";
 import { Hero } from "@/components/home/Hero";
@@ -7,10 +7,6 @@ import { ProductDiscovery } from "@/components/home/ProductDiscovery";
 import { FeaturedProduct } from "@/components/home/FeaturedProduct";
 import { Benefits } from "@/components/home/Benefits";
 import { ProblemSolution } from "@/components/home/ProblemSolution";
-import { ProductDemo } from "@/components/home/ProductDemo";
-import { SocialProof } from "@/components/home/SocialProof";
-import { Reviews } from "@/components/product/Reviews";
-import { RelatedProducts } from "@/components/home/RelatedProducts";
 import { FaqSection } from "@/components/home/FaqSection";
 import { ShippingInfoSection } from "@/components/home/ShippingInfoSection";
 import { FinalCta } from "@/components/home/FinalCta";
@@ -31,30 +27,27 @@ export default async function HomePage() {
   if (!heroProduct) {
     return (
       <EmptyState
-        title="No products yet"
-        body="Once a product is added, it will appear here as the homepage feature."
+        title={usingLiveShopify ? "No products yet" : "Catalog unavailable"}
+        body={
+          usingLiveShopify
+            ? "New automotive accessories will appear here as they become available."
+            : "The store catalog is temporarily unavailable. Please check back soon."
+        }
       />
     );
   }
 
-  const [related, reviews] = await Promise.all([
-    getRelatedProducts(heroProduct.handle),
-    getReviews(heroProduct.handle),
-  ]);
+  const related = await getRelatedProducts(heroProduct.handle);
 
   return (
     <>
       <Hero product={heroProduct} />
       <ProductDiscovery products={[heroProduct, ...related]} />
-      <FeaturedProduct product={heroProduct} />
       <Benefits />
+      <FeaturedProduct product={heroProduct} />
       <ProblemSolution product={heroProduct} />
-      <ProductDemo images={heroProduct.images} productTitle={heroProduct.title} />
-      <SocialProof />
-      <Reviews reviews={reviews} />
-      <RelatedProducts products={related} />
-      <FaqSection items={generalFaq} />
       <ShippingInfoSection />
+      <FaqSection items={generalFaq} />
       <FinalCta product={heroProduct} />
     </>
   );

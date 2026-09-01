@@ -3,7 +3,12 @@
 // stable version for this project update (August 2026).
 export const SHOPIFY_API_VERSION = "2026-07";
 
-// Velora currently targets the United States as its primary storefront
+// This collection is the storefront's catalog boundary. Products may
+// coexist with other brands in the same Shopify shop, but only products
+// assigned to this collection are allowed into the ProCabin storefront.
+export const PROCABIN_COLLECTION_HANDLE = "procabin";
+
+// ProCabin currently targets the United States as its primary storefront
 // context. Keeping this configurable makes it easy to introduce proper
 // country detection/market routing later without rewriting the data layer.
 const configuredCountry = (process.env.SHOPIFY_COUNTRY_CODE || "US").trim().toUpperCase();

@@ -21,18 +21,16 @@ export const PRODUCT_CARD_FRAGMENT = /* GraphQL */ `
         currencyCode
       }
     }
-    variants(first: 10) {
-      nodes {
-        id
-        availableForSale
-        price {
-          amount
-          currencyCode
-        }
-        compareAtPrice {
-          amount
-          currencyCode
-        }
+    selectedOrFirstAvailableVariant {
+      id
+      availableForSale
+      price {
+        amount
+        currencyCode
+      }
+      compareAtPrice {
+        amount
+        currencyCode
       }
     }
     shippingMinDays: metafield(namespace: "custom", key: "shipping_min_days") { value type }
@@ -57,12 +55,6 @@ export const PRODUCT_DETAIL_FRAGMENT = /* GraphQL */ `
         currencyCode
       }
     }
-    compareAtPriceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
     options {
       name
       values
@@ -72,6 +64,8 @@ export const PRODUCT_DETAIL_FRAGMENT = /* GraphQL */ `
         id
         title
         availableForSale
+        currentlyNotInStock
+        quantityAvailable
         price {
           amount
           currencyCode
@@ -106,20 +100,26 @@ export const GET_PRODUCT_BY_HANDLE = /* GraphQL */ `
   query GetProductByHandle($handle: String!, $country: CountryCode!) @inContext(country: $country) {
     product(handle: $handle) {
       ...ProductDetailFragment
+      collections(first: 250) {
+        nodes {
+          handle
+        }
+      }
     }
   }
   ${PRODUCT_DETAIL_FRAGMENT}
 `;
 
-// Full detail for every result — used only by getHeroProduct, where the
-// homepage's Hero/FeaturedProduct/ProblemSolution/ProductDemo/FinalCta
-// sections genuinely need tagline, benefits, and multiple images for
-// whichever product lands there.
-export const GET_ALL_PRODUCTS = /* GraphQL */ `
-  query GetAllProducts($first: Int!, $country: CountryCode!) @inContext(country: $country) {
-    products(first: $first) {
-      nodes {
-        ...ProductDetailFragment
+// The collection is deliberately the parent of every catalog query.
+// A generic top-level `products` query would allow products belonging to
+// another brand in the shared Shopify store to leak into ProCabin.
+export const GET_CATALOG_PRODUCTS = /* GraphQL */ `
+  query GetCatalogProducts($handle: String!, $first: Int!, $country: CountryCode!) @inContext(country: $country) {
+    collection(handle: $handle) {
+      products(first: $first) {
+        nodes {
+          ...ProductDetailFragment
+        }
       }
     }
   }
@@ -127,11 +127,13 @@ export const GET_ALL_PRODUCTS = /* GraphQL */ `
 `;
 
 // Card-weight product list — used for related/discovery product grids.
-export const GET_ALL_PRODUCT_CARDS = /* GraphQL */ `
-  query GetAllProductCards($first: Int!, $country: CountryCode!) @inContext(country: $country) {
-    products(first: $first) {
-      nodes {
-        ...ProductCardFragment
+export const GET_CATALOG_PRODUCT_CARDS = /* GraphQL */ `
+  query GetCatalogProductCards($handle: String!, $first: Int!, $country: CountryCode!) @inContext(country: $country) {
+    collection(handle: $handle) {
+      products(first: $first) {
+        nodes {
+          ...ProductCardFragment
+        }
       }
     }
   }
@@ -158,12 +160,14 @@ export const GET_COLLECTION_BY_HANDLE = /* GraphQL */ `
 // The absolute minimum for building a sitemap: just enough to build a
 // URL and, where Shopify has it, a real last-modified date — no
 // images/prices/variants at all.
-export const GET_ALL_PRODUCT_HANDLES = /* GraphQL */ `
-  query GetAllProductHandles($first: Int!, $country: CountryCode!) @inContext(country: $country) {
-    products(first: $first) {
-      nodes {
-        handle
-        updatedAt
+export const GET_CATALOG_PRODUCT_HANDLES = /* GraphQL */ `
+  query GetCatalogProductHandles($handle: String!, $first: Int!, $country: CountryCode!) @inContext(country: $country) {
+    collection(handle: $handle) {
+      products(first: $first) {
+        nodes {
+          handle
+          updatedAt
+        }
       }
     }
   }

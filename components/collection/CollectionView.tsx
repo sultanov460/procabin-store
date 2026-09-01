@@ -20,25 +20,32 @@ export function CollectionView({ products }: { products: Product[] }) {
     return list;
   }, [products, sort, inStockOnly]);
 
+  const hasActiveFilters = inStockOnly || sort !== "featured";
+
   return (
     <div>
-      <div className="mt-6 mb-8 flex flex-wrap items-center justify-between gap-4">
-        <label className="flex items-center gap-2 text-sm text-ink-soft">
+      <div className="mb-9 flex flex-wrap items-center justify-between gap-4 border-b border-line/80 pb-5 sm:mb-10">
+        <div className="flex flex-wrap items-center gap-4">
+          <p aria-live="polite" className="text-xs font-medium uppercase tracking-[0.12em] text-graphite-soft">
+            {visible.length} {visible.length === 1 ? "product" : "products"}
+          </p>
+          <label className="flex min-h-10 cursor-pointer items-center gap-2 border-l border-line pl-4 text-sm text-graphite-soft">
           <input
             type="checkbox"
             checked={inStockOnly}
             onChange={(e) => setInStockOnly(e.target.checked)}
-            className="h-4 w-4 rounded border-ink/30 accent-forest"
+            className="h-4 w-4 rounded border-cabin/25 accent-plum"
           />
           In stock only
-        </label>
+          </label>
+        </div>
 
-        <label className="flex items-center gap-2 text-sm text-ink-soft">
+        <label className="flex items-center gap-2 text-sm text-graphite-soft">
           Sort by
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortOption)}
-            className="rounded-pill border border-ink/20 bg-paper px-3 py-1.5 text-sm text-ink"
+            className="min-h-10 rounded-pill border border-line bg-white/60 px-4 text-sm text-cabin outline-none transition-colors hover:border-plum/30 focus:border-plum"
           >
             <option value="featured">Featured</option>
             <option value="price-asc">Price: Low to High</option>
@@ -47,7 +54,23 @@ export function CollectionView({ products }: { products: Product[] }) {
         </label>
       </div>
 
-      <ProductGrid products={visible} />
+      <ProductGrid
+        products={visible}
+        emptyAction={
+          hasActiveFilters ? (
+            <button
+              type="button"
+              className="btn-secondary mt-5"
+              onClick={() => {
+                setInStockOnly(false);
+                setSort("featured");
+              }}
+            >
+              Clear filters
+            </button>
+          ) : undefined
+        }
+      />
     </div>
   );
 }

@@ -1,28 +1,28 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/content/site-config";
+import { getSupportEmail } from "@/content/support-config";
 import { policiesConfig } from "@/content/policies-config";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Velora collects, uses, and discloses your personal information.",
+  description: "How ProCabin collects, uses, and discloses your personal information.",
+  alternates: { canonical: "/privacy" },
 };
 
-// This page is adapted directly from the store owner's actual
-// Shopify-generated Privacy Policy (provided verbatim). Edits made:
-// "My Store" -> "Velora"; personal email/physical address removed and
-// replaced with the site's configurable support contact; unfinished
-// Shopify template placeholders ("here .", bare "Shopify Privacy Portal
-// Link" text) replaced with working links or the contact fallback.
-// Structure, section order, and substantive legal content otherwise
-// preserved as provided.
+// Adapted from the store owner's Shopify-generated policy. References to
+// storefront features that this implementation does not provide (customer
+// accounts, wishlists, reviews, and advertising integrations) are omitted.
 
 export default function PrivacyPage() {
+  const supportEmail = getSupportEmail();
+
   return (
-    <div className="container-page max-w-2xl py-16">
-      <h1 className="text-4xl">Privacy Policy</h1>
+    <div className="policy-shell">
+      <p className="eyebrow mb-3">Legal</p>
+      <h1 className="text-4xl sm:text-5xl">Privacy Policy</h1>
       <p className="mt-2 text-sm text-ink-soft">Last updated: {policiesConfig.lastUpdated}</p>
 
-      <div className="mt-10 space-y-10 text-sm leading-relaxed text-ink-soft">
+      <div className="policy-content">
         <section>
           <p>
             {siteConfig.brandName} operates this store and website, including all related information, content,
@@ -58,10 +58,9 @@ export default function PrivacyPage() {
               information, financial account information, transaction details, form of payment, payment
               confirmation and other payment details.
             </li>
-            <li>Account information including your username, password, security questions, preferences and settings.</li>
             <li>
-              Transaction information including the items you view, put in your cart, add to your wishlist, or
-              purchase, return, exchange or cancel and your past transactions.
+              Transaction information including the items you view, put in your cart, purchase, return, exchange
+              or cancel and your past transactions.
             </li>
             <li>Communications with us including the information you include in communications with us, for example, when sending a customer support inquiry.</li>
             <li>Device information including information about your device, browser, or network connection, your IP address, and other unique identifiers.</li>
@@ -73,7 +72,7 @@ export default function PrivacyPage() {
           <h2 className="mb-2 text-lg text-ink">Personal information sources</h2>
           <p>We may collect personal information from the following sources:</p>
           <ul className="mt-3 list-disc space-y-2 pl-5">
-            <li>Directly from you, including when you create an account, visit or use the Services, communicate with us, or otherwise provide us with your personal information.</li>
+            <li>Directly from you, including when you visit or use the Services, place an order, communicate with us, or otherwise provide us with your personal information.</li>
             <li>Automatically through the Services, including from your device when you use our products or services or visit our websites, and through the use of cookies and similar technologies.</li>
             <li>From our service providers, including when we engage them to enable certain technology and when they collect or process your personal information on our behalf.</li>
             <li>From our partners or other third parties.</li>
@@ -90,28 +89,15 @@ export default function PrivacyPage() {
             <li>
               <span className="font-medium text-ink">Provide, tailor, and improve the Services.</span> We use your
               personal information to provide you with the Services, including to perform our contract with you, to
-              process your payments, to fulfill your orders, to remember your preferences and items you are
-              interested in, to send notifications related to your account, to process purchases, returns,
-              exchanges or other transactions, to create, maintain and otherwise manage your account, to arrange
-              for shipping, to facilitate any returns and exchanges, to enable you to post reviews, and to create a
-              customized shopping experience for you, such as recommending products related to your purchases. This
-              may include using your personal information to better tailor and improve the Services.
-            </li>
-            <li>
-              <span className="font-medium text-ink">Marketing and advertising.</span> Where applicable, we may use
-              your personal information for marketing and promotional purposes, such as to send marketing,
-              advertising and promotional communications by email, text message or postal mail, and to show you
-              advertisements for products or services on the Services or other websites. We do not claim use of any
-              specific advertising or analytics tool beyond what is actually enabled on this site at the time you
-              visit.
+              process your payments, to fulfill your orders, to process purchases, returns, exchanges or other
+              transactions, to arrange for shipping, to facilitate returns and exchanges, and to improve the
+              shopping experience.
             </li>
             <li>
               <span className="font-medium text-ink">Security and fraud prevention.</span> We use your personal
-              information to authenticate your account, to provide a secure payment and shopping experience,
-              detect, investigate or take action regarding possible fraudulent, illegal, unsafe, or malicious
-              activity, protect public safety, and to secure our services. If you register an account, you are
-              responsible for keeping your account credentials safe. We highly recommend that you do not share your
-              username, password or other access details with anyone else.
+              information to provide a secure payment and shopping experience, detect, investigate or take action
+              regarding possible fraudulent, illegal, unsafe, or malicious activity, protect public safety, and to
+              secure our services.
             </li>
             <li>
               <span className="font-medium text-ink">Communicating with you.</span> We use your personal
@@ -137,17 +123,10 @@ export default function PrivacyPage() {
           <ul className="mt-3 list-disc space-y-2 pl-5">
             <li>
               With Shopify, which provides our ecommerce platform (checkout, payments, and order processing),
-              and other vendors and third parties who perform services on our behalf (e.g. IT management, data
-              analytics, customer support, cloud storage, fulfillment and shipping).
+              and other vendors and third parties who perform services on our behalf (e.g. IT management,
+              customer support, cloud storage, fulfillment and shipping).
             </li>
-            <li>
-              With business and marketing partners, where applicable, to provide marketing services and advertise
-              to you. Our business and marketing partners will use your information in accordance with their own
-              privacy notices. Depending on where you reside, you may have a right to direct us not to share
-              information about you for targeted advertising purposes — you can exercise this right by contacting
-              us using the details below.
-            </li>
-            <li>When you direct, request, or otherwise consent to our disclosure of certain information to third parties, such as to ship you products or through your use of social media widgets or login integrations.</li>
+            <li>When you direct, request, or otherwise consent to our disclosure of certain information to third parties, such as to ship products to you.</li>
             <li>With our affiliates or otherwise within our corporate group.</li>
             <li>
               In connection with a business transaction such as a merger or bankruptcy, to comply with any
@@ -218,8 +197,8 @@ export default function PrivacyPage() {
           </p>
           <p className="mt-3">
             How long we retain your personal information depends on different factors, such as whether we need the
-            information to maintain your account, to provide you with Services, comply with legal obligations,
-            resolve disputes or enforce other applicable contracts and policies.
+            information to provide the Services, process or support an order, comply with legal obligations, resolve
+            disputes or enforce other applicable contracts and policies.
           </p>
         </section>
 
@@ -235,27 +214,6 @@ export default function PrivacyPage() {
             <li><span className="font-medium text-ink">Right to delete.</span> You may have a right to request that we delete personal information we maintain about you.</li>
             <li><span className="font-medium text-ink">Right to correct.</span> You may have a right to request that we correct inaccurate personal information we maintain about you.</li>
             <li><span className="font-medium text-ink">Right of portability.</span> You may have a right to receive a copy of the personal information we hold about you and to request that we transfer it to a third party, in certain circumstances and with certain exceptions.</li>
-            <li>
-              <span className="font-medium text-ink">Right to opt out of sale or sharing for targeted advertising.</span>{" "}
-              Depending on where you reside, you may have a right to opt out of the &quot;sale&quot; or
-              &quot;share&quot; of your personal information, or the processing of your personal information for
-              &quot;targeted advertising,&quot; as those terms are defined in applicable privacy laws. You can
-              exercise this right by contacting us using the details below. If you visit our website with the
-              Global Privacy Control opt-out preference signal enabled, depending on where you are, we will
-              automatically treat this as a request to opt out for the device and browser you use to visit the
-              website. Learn more about Global Privacy Control at{" "}
-              <a href="https://globalprivacycontrol.org/" className="text-forest underline" target="_blank" rel="noopener noreferrer">
-                https://globalprivacycontrol.org/
-              </a>
-              . Other than Global Privacy Control, we do not recognize other &quot;Do Not Track&quot; signals that
-              may be sent from your browser or device.
-            </li>
-            <li>
-              <span className="font-medium text-ink">Managing communication preferences.</span> We may send you
-              promotional emails, and you may opt out at any time using the unsubscribe option in those emails. If
-              you opt out, we may still send you non-promotional emails, such as those about your account or
-              orders.
-            </li>
           </ul>
           <p className="mt-3">
             You may exercise any of these rights by contacting us using the details below. To learn more about how
@@ -308,12 +266,12 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="mb-2 text-lg text-ink">Contact</h2>
-          {siteConfig.supportEmail ? (
+          {supportEmail ? (
             <p>
               Should you have any questions about our privacy practices or this Privacy Policy, or if you would
               like to exercise any of the rights available to you, please email us at{" "}
-              <a href={`mailto:${siteConfig.supportEmail}`} className="font-medium text-forest underline">
-                {siteConfig.supportEmail}
+              <a href={`mailto:${supportEmail}`} className="font-medium text-forest underline">
+                {supportEmail}
               </a>
               .
             </p>

@@ -1,22 +1,22 @@
 export const generalFaq = [
   {
-    question: "Where do you ship from?",
+    question: "Will an accessory fit my vehicle?",
     answer:
-      "Orders are processed and shipped from our fulfillment partner. Exact origin varies by item — see each product's shipping details.",
+      "Fit can vary by vehicle and product. Check the dimensions, compatibility notes, and specifications on the product page before ordering.",
   },
   {
-    question: "How long will my order take?",
+    question: "Where can I find delivery estimates?",
     answer:
-      "Most orders arrive within the estimated delivery window shown on the product page, after the processing time listed there.",
+      "When a product-specific estimate is available, it appears on the product page. The shipping option shown at checkout is the final source of truth.",
   },
   {
-    question: "Can I track my order?",
+    question: "Will I receive tracking?",
     answer:
       "Tracking details are provided when available and sent by email once your order ships.",
   },
   {
-    question: "What if I'm not happy with my order?",
+    question: "What if the product is not right for my car?",
     answer:
-      "See our Returns & Refunds page for the full policy. We want you to be glad you ordered from us.",
+      "Review our Returns & Refunds policy for eligibility and contact us with your order number before sending anything back.",
   },
 ];

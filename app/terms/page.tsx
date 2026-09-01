@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/content/site-config";
+import { getSupportEmail } from "@/content/support-config";
 import { policiesConfig } from "@/content/policies-config";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
-  description: "The terms and conditions governing use of the Velora website and purchases made through it.",
+  description: "The terms and conditions governing use of the ProCabin website and purchases made through it.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {
+  const supportEmail = getSupportEmail();
+
   return (
-    <div className="container-page max-w-2xl py-16">
-      <h1 className="text-4xl">Terms & Conditions</h1>
+    <div className="policy-shell">
+      <p className="eyebrow mb-3">Legal</p>
+      <h1 className="text-4xl sm:text-5xl">Terms & Conditions</h1>
       <p className="mt-2 text-sm text-ink-soft">Last updated: {policiesConfig.lastUpdated}</p>
 
-      <div className="mt-10 space-y-10 text-sm leading-relaxed text-ink-soft">
+      <div className="policy-content">
         <section>
           <h2 className="mb-2 text-lg text-ink">Acceptance of terms</h2>
           <p>
@@ -51,10 +56,10 @@ export default function TermsPage() {
         <section>
           <h2 className="mb-2 text-lg text-ink">Pricing & currency</h2>
           <p>
-            Prices are displayed in the currency presented for the applicable Shopify market and checkout context. The US
-            storefront is configured to use USD. Prices are subject to change without notice. We make reasonable
-            efforts to ensure pricing is accurate, but errors may occur; if a product is listed at an incorrect
-            price, we reserve the right to cancel any order placed at the incorrect price.
+            Prices are displayed in the currency presented for the applicable Shopify market and checkout context.
+            Prices are subject to change without notice. We make reasonable efforts to ensure pricing is accurate,
+            but errors may occur; if a product is listed at an incorrect price, we reserve the right to cancel any
+            order placed at the incorrect price.
           </p>
         </section>
 
@@ -163,11 +168,11 @@ export default function TermsPage() {
 
         <section>
           <h2 className="mb-2 text-lg text-ink">Contact</h2>
-          {siteConfig.supportEmail ? (
+          {supportEmail ? (
             <p>
               Questions about these terms can be sent to{" "}
-              <a href={`mailto:${siteConfig.supportEmail}`} className="font-medium text-forest underline">
-                {siteConfig.supportEmail}
+              <a href={`mailto:${supportEmail}`} className="font-medium text-forest underline">
+                {supportEmail}
               </a>
               .
             </p>

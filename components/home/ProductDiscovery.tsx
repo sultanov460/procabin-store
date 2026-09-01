@@ -2,15 +2,12 @@ import Link from "next/link";
 import { ProductGrid } from "@/components/collection/ProductGrid";
 import type { Product } from "@/lib/types/product";
 
-// Sits right after the Hero so a new visitor understands within a few
-// seconds that Velora is a multi-product store, not a single-product
-// landing page — without crowding the hero itself. Products always come
-// through the existing data layer (never hardcoded), and the count is
-// deliberately small; the full catalog lives at /collections/all.
+// Products always come through the shared Shopify/mock data boundary.
+// No product handles or prices are duplicated in presentation code.
 export function ProductDiscovery({
   products,
-  title = "Kitchen essentials",
-  subtitle = "Thoughtful tools for simpler everyday cooking.",
+  title = "Featured accessories",
+  subtitle = "Useful technology and modern accessories selected for the road ahead.",
 }: {
   products: Product[];
   title?: string;
@@ -19,14 +16,15 @@ export function ProductDiscovery({
   if (products.length === 0) return null;
 
   return (
-    <section className="container-page py-10 md:py-16">
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <section id="featured-products" className="container-page scroll-mt-24 py-16 md:py-20 lg:py-24">
+      <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h2 className="text-2xl md:text-3xl">{title}</h2>
-          <p className="mt-2 max-w-md text-sm text-ink-soft">{subtitle}</p>
+          <p className="eyebrow mb-3">Selected for your drive</p>
+          <h2 className="text-3xl md:text-4xl">{title}</h2>
+          <p className="mt-3 max-w-md text-sm leading-6 text-graphite-soft">{subtitle}</p>
         </div>
         <Link href="/collections/all" className="btn-secondary shrink-0">
-          Shop all
+          View all
         </Link>
       </div>
       <ProductGrid products={products.slice(0, 4)} />

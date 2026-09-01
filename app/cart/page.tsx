@@ -13,7 +13,7 @@ export default function CartPage() {
   // is only true once we've actually checked.
   if (isInitializing) {
     return (
-      <div className="container-page py-20 text-center">
+      <div className="container-page py-24 text-center">
         <div className="mx-auto h-6 w-40 animate-pulse rounded-pill bg-sand/60" aria-hidden="true" />
         <span className="sr-only">Loading your cart…</span>
       </div>
@@ -22,9 +22,10 @@ export default function CartPage() {
 
   if (!cart || cart.lines.length === 0) {
     return (
-      <div className="container-page py-20 text-center">
-        <h1 className="text-2xl">Your cart is empty</h1>
-        <p className="mt-2 text-sm text-ink-soft">Add something you&apos;ll love.</p>
+      <div className="container-page py-24 text-center">
+        <p className="eyebrow mb-3">Your order</p>
+        <h1 className="text-3xl">Your cart is empty</h1>
+        <p className="mt-3 text-sm text-ink-soft">Explore the current collection and add an accessory when you&apos;re ready.</p>
         <Link href="/collections/all" className="btn-primary mt-6 inline-flex">
           Continue shopping
         </Link>
@@ -32,47 +33,56 @@ export default function CartPage() {
     );
   }
 
+  const checkoutAvailable = /^https:\/\//i.test(cart.checkoutUrl);
+
   return (
-    <div className="container-page grid gap-10 py-10 md:grid-cols-[1fr_320px]">
+    <div className="container-page grid gap-10 py-10 md:grid-cols-[minmax(0,1fr)_330px] md:py-14 lg:gap-14">
       <div>
-        <h1 className="mb-6 text-2xl">Your cart</h1>
+        <p className="eyebrow">Your order</p>
+        <h1 className="mb-8 mt-2 text-3xl sm:text-4xl">Shopping cart</h1>
         {error && (
           <p role="alert" className="mb-4 rounded-card bg-clay/10 px-4 py-3 text-sm text-clay-dark">
             {error}
           </p>
         )}
-        <ul className="divide-y divide-line border-y border-line">
+        <ul className="divide-y divide-line/80 border-y border-line/80">
           {cart.lines.map((line) => (
-            <li key={line.id} className="flex gap-4 py-5">
-              <ProductImage
-                src={line.image}
-                alt={line.title}
-                aspectClassName="aspect-square"
-                className="h-20 w-20 shrink-0"
-                sizes="80px"
-              />
-              <div className="flex-1">
-                <p className="font-medium text-ink">{line.title}</p>
-                {line.variantTitle !== "Default Title" && <p className="text-xs text-ink-soft">{line.variantTitle}</p>}
+            <li key={line.id} className="grid grid-cols-[76px_minmax(0,1fr)] gap-4 py-5 sm:grid-cols-[88px_minmax(0,1fr)_auto]">
+              <Link href={`/products/${line.productHandle}`} className="block self-start rounded-card focus-visible:ring-2 focus-visible:ring-plum">
+                <ProductImage
+                  src={line.image}
+                  alt={line.title}
+                  aspectClassName="aspect-square"
+                  fit={line.image?.startsWith("/images/mock/") ? "cover" : "contain"}
+                  padding={line.image?.startsWith("/images/mock/") ? "none" : "compact"}
+                  className="h-[76px] w-[76px] shrink-0 border border-line bg-white/40 sm:h-[88px] sm:w-[88px]"
+                  sizes="88px"
+                />
+              </Link>
+              <div className="min-w-0">
+                <Link href={`/products/${line.productHandle}`} className="font-medium text-ink transition-colors hover:text-plum-dark">
+                  {line.title}
+                </Link>
+                {line.variantTitle !== "Default Title" && <p className="mt-1 text-xs text-ink-soft">Selected option: {line.variantTitle}</p>}
 
-                <div className="mt-3 flex items-center gap-4">
-                  <div className="inline-flex items-center rounded-pill border border-ink/20">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <div className="inline-flex h-11 items-center rounded-pill border border-ink/20 bg-white/35">
                     <button
                       type="button"
                       aria-label="Decrease quantity"
                       disabled={isLoading}
                       onClick={() => updateLine(line.id, Math.max(1, line.quantity - 1))}
-                      className="px-3 py-2 text-base"
+                      className="flex h-11 w-11 items-center justify-center text-base disabled:opacity-40"
                     >
                       −
                     </button>
-                    <span className="w-6 text-center font-mono text-xs">{line.quantity}</span>
+                    <span className="w-7 text-center font-mono text-xs" aria-live="polite">{line.quantity}</span>
                     <button
                       type="button"
                       aria-label="Increase quantity"
                       disabled={isLoading || line.quantity >= 99}
                       onClick={() => updateLine(line.id, Math.min(99, line.quantity + 1))}
-                      className="px-3 py-2 text-base"
+                      className="flex h-11 w-11 items-center justify-center text-base disabled:opacity-40"
                     >
                       +
                     </button>
@@ -81,34 +91,42 @@ export default function CartPage() {
                     type="button"
                     disabled={isLoading}
                     onClick={() => removeLine(line.id)}
-                    className="text-xs font-medium text-ink-soft underline hover:text-ink"
+                    className="min-h-11 px-1 text-xs font-medium text-ink-soft underline underline-offset-4 hover:text-ink disabled:opacity-40"
                   >
                     Remove
                   </button>
                 </div>
               </div>
-              <span className="font-mono text-sm">{formatMoney({ amount: line.price.amount * line.quantity, currencyCode: line.price.currencyCode })}</span>
+              <span className="col-start-2 font-mono text-sm font-medium sm:col-start-auto sm:row-start-1">
+                {formatMoney({ amount: line.price.amount * line.quantity, currencyCode: line.price.currencyCode })}
+              </span>
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="card h-fit p-6">
-        <div className="flex items-center justify-between text-sm text-ink-soft">
+      <aside className="card h-fit p-6 md:sticky md:top-24 md:p-7">
+        <h2 className="text-lg">Order summary</h2>
+        <div className="mt-5 flex items-center justify-between text-sm text-ink-soft">
           <span>Subtotal</span>
           <span className="font-mono text-ink">{formatMoney(cart.subtotal)}</span>
         </div>
         <p className="mt-1 text-xs text-ink-soft">Shipping and taxes calculated at checkout.</p>
         <a
           href={cart.checkoutUrl}
-          className={`btn-primary mt-6 w-full ${cart.checkoutUrl === "#" ? "pointer-events-none opacity-50" : ""}`}
+          aria-disabled={!checkoutAvailable}
+          tabIndex={checkoutAvailable ? undefined : -1}
+          className={`btn-primary mt-6 w-full ${!checkoutAvailable ? "pointer-events-none opacity-50" : ""}`}
         >
           Checkout
         </a>
-        {cart.checkoutUrl === "#" && (
+        {checkoutAvailable && (
+          <p className="mt-3 text-center text-[11px] leading-5 text-ink-soft">Checkout continues securely with Shopify.</p>
+        )}
+        {!checkoutAvailable && (
           <p className="mt-2 text-center text-xs text-ink-soft">Checkout activates once Shopify is connected.</p>
         )}
-      </div>
+      </aside>
     </div>
   );
 }

@@ -36,6 +36,7 @@ export function ProductImage({
   sizes,
   priority = false,
   className = "",
+  imageClassName = "",
   badge,
 }: {
   src?: string;
@@ -52,6 +53,7 @@ export function ProductImage({
   sizes: string;
   priority?: boolean;
   className?: string;
+  imageClassName?: string;
   // Optional small overlay (e.g. a "Save $X" corner badge) rendered
   // inside this same relative, overflow-hidden, rounded container — so
   // it's guaranteed to sit within the image's bounds and share its
@@ -73,7 +75,7 @@ export function ProductImage({
           sizes={sizes}
           priority={priority}
           onError={() => setErrored(true)}
-          className={fit === "contain" ? `object-contain ${CONTAIN_PADDING[padding]}` : "object-cover"}
+          className={`${fit === "contain" ? `object-contain ${CONTAIN_PADDING[padding]}` : "object-cover"} ${imageClassName}`}
         />
       )}
       {badge}

@@ -53,8 +53,8 @@ export function getValidDeliveryRange(shipping?: ShippingEstimate): { minDays: n
   return getValidRange(shipping?.minDays, shipping?.maxDays);
 }
 
-// Processing time (time CJdropshipping/the merchant takes to prepare the
-// order) is tracked separately from shipping/transit time — same
+// Processing time before an order ships is tracked separately from
+// shipping/transit time — same
 // validation rules, kept as its own function so ShippingBlock can show
 // or omit each line independently.
 export function getValidProcessingRange(shipping?: ShippingEstimate): { minDays: number; maxDays: number } | null {
@@ -62,9 +62,8 @@ export function getValidProcessingRange(shipping?: ShippingEstimate): { minDays:
 }
 
 // Turns a raw `shipping_origin` metafield value into safe, neutral,
-// customer-facing copy. Never echoes the raw metafield text — that's the
-// one thing standing between an internal note like "CJdropshipping / US
-// pod" and it accidentally rendering on the storefront. When the raw
+// customer-facing copy. Never echoes the raw metafield text, which may
+// contain internal fulfillment notes. When the raw
 // value doesn't clearly indicate a US warehouse, we deliberately default
 // to the generic international phrasing rather than guess.
 export function getOriginLabel(origin?: string): string | undefined {

@@ -13,6 +13,10 @@ export type ProductVariant = {
   price: Money;
   compareAtPrice?: Money;
   available: boolean;
+  // Present only when Shopify returns a reliable, scoped inventory value.
+  // Undefined means availability is known but an exact sellable quantity
+  // is not, so the UI must not invent a stock limit or scarcity message.
+  quantityAvailable?: number;
   selectedOptions: { name: string; value: string }[];
   image?: string;
 };

@@ -2,6 +2,7 @@ import { shopifyFetch } from "./client";
 import { CART_CREATE, CART_LINES_ADD, CART_LINES_UPDATE, CART_LINES_REMOVE, GET_CART } from "./mutations";
 import type { Cart, CartLine } from "@/lib/types/cart";
 import { SHOPIFY_COUNTRY_CODE } from "./config";
+import { getCustomerFacingProductTitle } from "@/lib/utils/product";
 
 type ShopifyCartNode = {
   id: string;
@@ -26,13 +27,17 @@ type ShopifyUserError = { message: string; field?: string[] | null };
 type CartMutationPayload = { cart: ShopifyCartNode | null; userErrors: ShopifyUserError[] };
 
 function mapCart(c: ShopifyCartNode): Cart {
+  const toAmount = (value: string) => {
+    const amount = Number.parseFloat(value);
+    return Number.isFinite(amount) ? amount : 0;
+  };
   const lines: CartLine[] = c.lines.nodes.map((n) => ({
     id: n.id,
     variantId: n.merchandise.id,
     productHandle: n.merchandise.product.handle,
-    title: n.merchandise.product.title,
+    title: getCustomerFacingProductTitle(n.merchandise.product.title),
     variantTitle: n.merchandise.title,
-    price: { amount: Number.parseFloat(n.merchandise.price.amount), currencyCode: n.merchandise.price.currencyCode },
+    price: { amount: toAmount(n.merchandise.price.amount), currencyCode: n.merchandise.price.currencyCode },
     image: n.merchandise.image?.url,
     quantity: n.quantity,
   }));
@@ -40,7 +45,7 @@ function mapCart(c: ShopifyCartNode): Cart {
   return {
     id: c.id,
     lines,
-    subtotal: { amount: Number.parseFloat(c.cost.subtotalAmount.amount), currencyCode: c.cost.subtotalAmount.currencyCode },
+    subtotal: { amount: toAmount(c.cost.subtotalAmount.amount), currencyCode: c.cost.subtotalAmount.currencyCode },
     checkoutUrl: c.checkoutUrl,
   };
 }

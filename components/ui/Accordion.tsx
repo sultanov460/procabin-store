@@ -15,11 +15,11 @@ export function Accordion({ items }: { items: { question: string; answer: string
               type="button"
               onClick={() => setOpenIndex(isOpen ? null : i)}
               aria-expanded={isOpen}
-              className="flex w-full items-center justify-between gap-4 py-4 text-left"
+              className="flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left"
             >
-              <span className="font-medium text-ink">{item.question}</span>
+              <span className="font-medium text-cabin">{item.question}</span>
               <span
-                className={`shrink-0 text-forest transition-transform duration-200 motion-reduce:transition-none ${isOpen ? "rotate-45" : ""}`}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-cabin/10 text-plum transition-transform duration-200 motion-reduce:transition-none ${isOpen ? "rotate-45" : ""}`}
                 aria-hidden="true"
               >
                 +
@@ -34,7 +34,7 @@ export function Accordion({ items }: { items: { question: string; answer: string
               }`}
             >
               <div className="min-h-0">
-                <p className="pb-4 text-sm leading-relaxed text-ink-soft">{item.answer}</p>
+                <p className="max-w-2xl pb-5 pr-10 text-sm leading-7 text-graphite-soft">{item.answer}</p>
               </div>
             </div>
           </div>

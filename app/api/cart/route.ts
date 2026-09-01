@@ -15,13 +15,14 @@ async function readJson<T>(req: NextRequest): Promise<T | null> {
 
 export async function GET(req: NextRequest) {
   const cartId = req.nextUrl.searchParams.get("cartId");
-  if (!cartId) return NextResponse.json(null);
+  if (!cartId) return NextResponse.json({ error: "cartId is required" }, { status: 400 });
 
   try {
     const cart = await getCart(cartId);
-    return NextResponse.json(cart ?? null);
+    if (!cart) return NextResponse.json({ error: "Cart not found" }, { status: 404 });
+    return NextResponse.json(cart);
   } catch {
-    return NextResponse.json(null);
+    return NextResponse.json({ error: "Unable to restore cart" }, { status: 502 });
   }
 }
 
@@ -37,8 +38,17 @@ export async function POST(req: NextRequest) {
     if (cartId) {
       try {
         return NextResponse.json(await addCartLine(cartId, variantId, quantity));
-      } catch {
-        // A stale cart id is recoverable: create a fresh cart below.
+      } catch (addError) {
+        // Only replace a genuinely stale cart. Inventory, quantity, and
+        // other Shopify errors must surface without discarding the buyer's
+        // existing cart or silently changing Buy Now semantics.
+        let existingCart;
+        try {
+          existingCart = await getCart(cartId);
+        } catch {
+          throw addError;
+        }
+        if (existingCart) throw addError;
       }
     }
     return NextResponse.json(await createCart(variantId, quantity));

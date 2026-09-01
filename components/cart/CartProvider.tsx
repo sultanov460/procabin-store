@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { Cart } from "@/lib/types/cart";
 
 type CartContextValue = {
@@ -33,6 +33,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const mutationPendingRef = useRef(false);
 
   useEffect(() => {
     const cartId = getCookie(CART_ID_KEY);
@@ -41,8 +42,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     fetch(`/api/cart?cartId=${encodeURIComponent(cartId)}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setCart(data))
+      .then(async (res) => {
+        if (res.status === 404) {
+          deleteCookie(CART_ID_KEY);
+          return null;
+        }
+        return res.ok ? res.json() : undefined;
+      })
+      .then((data) => {
+        if (data) {
+          setCart(data);
+        }
+      })
       .catch(() => {
         // Best-effort restore only; a failure here just means the cart
         // starts empty, which is a safe fallback.
@@ -51,6 +62,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addToCart = useCallback(async (variantId: string, quantity = 1) => {
+    if (mutationPendingRef.current) return null;
+    mutationPendingRef.current = true;
     setIsLoading(true);
     setError(null);
     try {
@@ -72,13 +85,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setError("Unable to reach the cart right now. Please check your connection and try again.");
       return null;
     } finally {
+      mutationPendingRef.current = false;
       setIsLoading(false);
     }
   }, []);
 
   const removeLine = useCallback(
     async (lineId: string) => {
-      if (!cart) return;
+      if (!cart || mutationPendingRef.current) return;
+      mutationPendingRef.current = true;
       setIsLoading(true);
       setError(null);
       try {
@@ -96,6 +111,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } catch {
         setError("Unable to reach the cart right now. Please check your connection and try again.");
       } finally {
+        mutationPendingRef.current = false;
         setIsLoading(false);
       }
     },
@@ -104,7 +120,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const updateLine = useCallback(
     async (lineId: string, quantity: number) => {
-      if (!cart) return;
+      if (!cart || mutationPendingRef.current) return;
+      mutationPendingRef.current = true;
       setIsLoading(true);
       setError(null);
       try {
@@ -122,6 +139,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } catch {
         setError("Unable to reach the cart right now. Please check your connection and try again.");
       } finally {
+        mutationPendingRef.current = false;
         setIsLoading(false);
       }
     },
@@ -148,5 +166,9 @@ function getCookie(name: string): string | undefined {
 }
 
 function setCookie(name: string, value: string) {
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 30}`;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
+}
+
+function deleteCookie(name: string) {
+  document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
 }

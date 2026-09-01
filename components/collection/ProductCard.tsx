@@ -2,36 +2,31 @@ import Link from "next/link";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { ProductPrice } from "@/components/ui/ProductPrice";
 import { TruckIcon } from "@/components/ui/icons";
-import { getSavings, formatMoney } from "@/lib/utils/formatCurrency";
 import { getValidDeliveryRange } from "@/lib/utils/shipping";
 import type { Product } from "@/lib/types/product";
 
 export function ProductCard({ product }: { product: Product }) {
-  const savings = getSavings(product.price, product.compareAtPrice);
   const delivery = getValidDeliveryRange(product.shipping);
+  const available = product.variants.some((variant) => variant.available);
 
   return (
     <Link
       href={`/products/${product.handle}`}
-      className="group block rounded-card outline-none focus-visible:ring-2 focus-visible:ring-forest focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+      className="group flex h-full flex-col rounded-[22px] border border-line/80 bg-white/40 p-2 outline-none transition-[transform,box-shadow,border-color,background-color] duration-300 hover:-translate-y-[3px] hover:border-plum/20 hover:bg-white/65 hover:shadow-soft active:translate-y-0 active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-plum focus-visible:ring-offset-2 focus-visible:ring-offset-ivory motion-reduce:transform-none motion-reduce:transition-none sm:p-2.5"
     >
       <ProductImage
         src={product.images[0]}
         alt={product.title}
-        sizes="(max-width: 768px) 50vw, 25vw"
-        padding="card"
-        className="bg-sand/40 transition-transform duration-300 group-hover:scale-[1.015] group-active:scale-[0.99]"
-        badge={
-          savings ? (
-            <span className="absolute left-2.5 top-2.5 z-10 rounded-pill bg-paper/95 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.05em] text-forest shadow-[0_1px_4px_rgba(42,37,33,0.12)] ring-1 ring-forest/15">
-              Save {formatMoney(savings)}
-            </span>
-          ) : undefined
-        }
+        sizes="(max-width: 639px) calc(100vw - 40px), (max-width: 1023px) 50vw, 25vw"
+        aspectClassName="aspect-square"
+        fit={product.isMock ? "cover" : "contain"}
+        padding={product.isMock ? "none" : "compact"}
+        className="rounded-[17px] bg-mist/65"
+        imageClassName="transition-transform duration-500 ease-out group-hover:scale-[1.025] motion-reduce:transform-none motion-reduce:transition-none"
       />
 
-      <div className="mt-3 min-w-0">
-        <p className="line-clamp-2 text-sm font-medium leading-snug text-ink transition-colors duration-200 group-hover:text-forest">
+      <div className="flex min-w-0 flex-1 flex-col px-2 pb-2 pt-4 sm:px-2.5">
+        <p title={product.title} className="line-clamp-2 min-h-11 text-[15px] font-semibold leading-[1.4] text-cabin transition-colors duration-200 group-hover:text-plum-dark">
           {product.title}
         </p>
 
@@ -39,17 +34,19 @@ export function ProductCard({ product }: { product: Product }) {
           price={product.price}
           compareAtPrice={product.compareAtPrice}
           size="card"
-          className="mt-1.5"
-          showSavingsBadge={false}
+          className="mt-2.5"
         />
 
         {delivery && (
-          <p className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-soft">
-            <TruckIcon className="h-3.5 w-3.5 shrink-0 text-ink-soft/70" />
+          <p className="mt-auto flex items-center gap-2 border-t border-line/70 pt-3 text-xs leading-5 text-graphite-soft">
+            <TruckIcon className="h-3.5 w-3.5 shrink-0 text-plum/75" />
             <span>
               Delivery: {delivery.minDays}–{delivery.maxDays} days
             </span>
           </p>
+        )}
+        {!available && (
+          <p className={`${delivery ? "mt-2" : "mt-auto pt-3"} text-xs font-medium text-graphite-soft`}>Currently unavailable</p>
         )}
       </div>
     </Link>

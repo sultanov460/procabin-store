@@ -8,6 +8,19 @@ import { mockProducts } from "./products";
 
 const carts = new Map<string, Cart>();
 
+function validateMockPurchase(variantId: string, quantity: number) {
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+    throw new Error("Quantity must be a whole number between 1 and 99.");
+  }
+  const found = findVariant(variantId);
+  if (!found) throw new Error(`Invalid variant id: ${variantId}`);
+  if (!found.variant.available) throw new Error("This variant is out of stock.");
+  if (found.variant.quantityAvailable !== undefined && quantity > found.variant.quantityAvailable) {
+    throw new Error("The requested quantity is not available.");
+  }
+  return found;
+}
+
 function findVariant(variantId: string) {
   for (const product of mockProducts) {
     const variant = product.variants.find((v) => v.id === variantId);
@@ -22,8 +35,7 @@ function recalcSubtotal(cart: Cart): Cart {
 }
 
 export async function createCart(variantId: string, quantity = 1): Promise<Cart> {
-  const found = findVariant(variantId);
-  if (!found) throw new Error(`Invalid variant id: ${variantId}`);
+  const found = validateMockPurchase(variantId, quantity);
 
   const id = `mock-cart-${Date.now()}`;
   const lines: CartLine[] =
@@ -48,13 +60,13 @@ export async function createCart(variantId: string, quantity = 1): Promise<Cart>
 }
 
 export async function addCartLine(cartId: string, variantId: string, quantity = 1): Promise<Cart> {
-  const found = findVariant(variantId);
-  if (!found) throw new Error(`Invalid variant id: ${variantId}`);
+  const found = validateMockPurchase(variantId, quantity);
 
   const cart = carts.get(cartId);
   if (!cart) throw new Error("Cart not found");
 
   const existing = cart.lines.find((l) => l.variantId === variantId);
+  if (existing && existing.quantity + quantity > 99) throw new Error("Cart quantity cannot exceed 99.");
   const lines = existing
     ? cart.lines.map((l) => (l.variantId === variantId ? { ...l, quantity: l.quantity + quantity } : l))
     : [

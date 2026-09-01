@@ -1,7 +1,6 @@
 export const siteConfig = {
-  brandName: "Velora",
-  tagline: "Smart kitchen essentials for a calmer, easier home.",
-  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || undefined,
+  brandName: "ProCabin",
+  tagline: "Smarter accessories for every drive.",
   nav: [
     { label: "Shop", href: "/collections/all" },
     { label: "About", href: "/about" },
@@ -12,8 +11,8 @@ export const siteConfig = {
     {
       title: "Shop",
       links: [
-        { label: "All Products", href: "/collections/all" },
-        { label: "About Velora", href: "/about" },
+        { label: "All Accessories", href: "/collections/all" },
+        { label: "About ProCabin", href: "/about" },
       ],
     },
     {
@@ -33,5 +32,5 @@ export const siteConfig = {
       ],
     },
   ],
-  announcement: "Free standard shipping on orders to the United States",
+  announcement: "Smart automotive accessories for every drive",
 };

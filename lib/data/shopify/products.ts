@@ -1,8 +1,14 @@
 import { shopifyFetch } from "./client";
-import { GET_PRODUCT_BY_HANDLE, GET_ALL_PRODUCTS, GET_ALL_PRODUCT_CARDS, GET_ALL_PRODUCT_HANDLES, GET_COLLECTION_BY_HANDLE } from "./queries";
+import {
+  GET_PRODUCT_BY_HANDLE,
+  GET_CATALOG_PRODUCTS,
+  GET_CATALOG_PRODUCT_CARDS,
+  GET_CATALOG_PRODUCT_HANDLES,
+  GET_COLLECTION_BY_HANDLE,
+} from "./queries";
 import { getValidDeliveryRange, getValidProcessingRange, parseMetafieldNumber } from "@/lib/utils/shipping";
 import type { Product, ProductVariant, ProductSpec, ShippingEstimate } from "@/lib/types/product";
-import { SHOPIFY_COUNTRY_CODE } from "./config";
+import { PROCABIN_COLLECTION_HANDLE, SHOPIFY_COUNTRY_CODE } from "./config";
 import { getCustomerFacingProductTitle } from "@/lib/utils/product";
 
 type ShopifyMoney = { amount: string; currencyCode: string };
@@ -12,16 +18,17 @@ type ShopifyVariantNode = {
   id: string;
   title: string;
   availableForSale: boolean;
+  currentlyNotInStock: boolean;
+  quantityAvailable: number | null;
   price: ShopifyMoney;
   compareAtPrice: ShopifyMoney | null;
   selectedOptions: { name: string; value: string }[];
   image: { url: string } | null;
 };
 
-// Matches PRODUCT_CARD_FRAGMENT exactly — a variant shape with just
-// enough to pick a display price/compareAtPrice pair and know
-// availability. No title/selectedOptions/image: cards never render a
-// variant selector or a per-variant thumbnail.
+// Matches PRODUCT_CARD_FRAGMENT exactly. Shopify resolves this through
+// selectedOrFirstAvailableVariant, avoiding a variant connection on every
+// catalog card while keeping price and compare-at price paired truthfully.
 type ShopifyVariantCardNode = {
   id: string;
   availableForSale: boolean;
@@ -36,7 +43,6 @@ type ShopifyProductNode = {
   description: string;
   images: { nodes: { url: string }[] };
   priceRange: { minVariantPrice: ShopifyMoney };
-  compareAtPriceRange: { minVariantPrice: ShopifyMoney } | null;
   options: { name: string; values: string[] }[];
   variants: { nodes: ShopifyVariantNode[] };
   shippingMinDays: ShopifyMetafield;
@@ -59,7 +65,7 @@ type ShopifyProductCardNode = {
   title: string;
   images: { nodes: { url: string }[] };
   priceRange: { minVariantPrice: ShopifyMoney };
-  variants: { nodes: ShopifyVariantCardNode[] };
+  selectedOrFirstAvailableVariant: ShopifyVariantCardNode | null;
   shippingMinDays: ShopifyMetafield;
   shippingMaxDays: ShopifyMetafield;
 };
@@ -82,6 +88,10 @@ function mapVariant(v: ShopifyVariantNode): ProductVariant {
         ? { amount: compareAmount, currencyCode: v.compareAtPrice.currencyCode }
         : undefined,
     available: v.availableForSale,
+    quantityAvailable:
+      !v.currentlyNotInStock && Number.isInteger(v.quantityAvailable) && (v.quantityAvailable as number) >= 0
+        ? (v.quantityAvailable as number)
+        : undefined,
     selectedOptions: v.selectedOptions,
     image: v.image?.url,
   };
@@ -108,31 +118,6 @@ function mapVariantCard(v: ShopifyVariantCardNode): ProductVariant {
 }
 
 function parseShippingMetafields(p: ShopifyProductNode): ShippingEstimate | undefined {
-  // Temporary, opt-in diagnostic for tracing exactly where configured
-  // Shopify delivery metafields disappear on their way to the UI. Off by
-  // default and server-only (this module is never imported by a "use
-  // client" file) — no secrets are logged, only the four metafield
-  // objects Shopify actually returned for this product. To use: set
-  // SHOPIFY_DEBUG_METAFIELDS=1 in .env.local, load a product page, and
-  // read the server (terminal) log.
-  //   - All four fields log as `null` → Shopify Storefront API access is
-  //     not enabled for those metafield definitions (see Shopify Admin
-  //     under Settings > Custom data > Products > [field] > Access).
-  //     This is the most common cause: metafields created in Admin are
-  //     NOT exposed to the Storefront API by default.
-  //   - Fields log with a `value`/`type` present → the data is reaching
-  //     this function fine and any remaining issue is in parsing below.
-  // Remove this block once the Admin/data issue is confirmed fixed.
-  if (process.env.SHOPIFY_DEBUG_METAFIELDS === "1") {
-    // eslint-disable-next-line no-console
-    console.warn(`[shopify metafields] ${p.handle}`, {
-      shippingMinDays: p.shippingMinDays,
-      shippingMaxDays: p.shippingMaxDays,
-      processingMinDays: p.processingMinDays,
-      processingMaxDays: p.processingMaxDays,
-    });
-  }
-
   // Values come through the centralized parser so a metafield that was
   // accidentally created as a Shopify "List Integer" (serialized as
   // e.g. "[5]") is normalized the same way a plain Integer ("5") is —
@@ -143,7 +128,7 @@ function parseShippingMetafields(p: ShopifyProductNode): ShippingEstimate | unde
   const processingMaxDays = parseMetafieldNumber(p.processingMaxDays?.value) ?? 0;
 
   const candidate: ShippingEstimate = {
-    country: "US",
+    country: SHOPIFY_COUNTRY_CODE,
     minDays,
     maxDays,
     processingMinDays,
@@ -277,8 +262,10 @@ function mapProduct(p: ShopifyProductNode): Product {
 // with honest empty defaults rather than fetched — this Product is only
 // ever passed to grid components, never to a product detail page.
 function mapProductCard(p: ShopifyProductCardNode): Product {
-  const variants = p.variants.nodes.map(mapVariantCard);
-  const displayVariant = pickDisplayVariant(variants);
+  const displayVariant = p.selectedOrFirstAvailableVariant
+    ? mapVariantCard(p.selectedOrFirstAvailableVariant)
+    : undefined;
+  const variants = displayVariant ? [displayVariant] : [];
   const fallbackPrice = {
     amount: toFiniteMoney(p.priceRange.minVariantPrice.amount),
     currencyCode: p.priceRange.minVariantPrice.currencyCode,
@@ -286,8 +273,8 @@ function mapProductCard(p: ShopifyProductCardNode): Product {
 
   const minDays = parseMetafieldNumber(p.shippingMinDays?.value) ?? 0;
   const maxDays = parseMetafieldNumber(p.shippingMaxDays?.value) ?? 0;
-  const shipping = getValidDeliveryRange({ country: "US", minDays, maxDays })
-    ? { country: "US", minDays, maxDays }
+  const shipping = getValidDeliveryRange({ country: SHOPIFY_COUNTRY_CODE, minDays, maxDays })
+    ? { country: SHOPIFY_COUNTRY_CODE, minDays, maxDays }
     : undefined;
 
   return {
@@ -308,29 +295,42 @@ function mapProductCard(p: ShopifyProductCardNode): Product {
 }
 
 export async function getProductByHandle(handle: string): Promise<Product | undefined> {
-  const data = await shopifyFetch<{ product: ShopifyProductNode | null }>(GET_PRODUCT_BY_HANDLE, { handle, country: SHOPIFY_COUNTRY_CODE });
-  return data.product ? mapProduct(data.product) : undefined;
+  const data = await shopifyFetch<{
+    product: (ShopifyProductNode & { collections: { nodes: { handle: string }[] } }) | null;
+  }>(GET_PRODUCT_BY_HANDLE, { handle, country: SHOPIFY_COUNTRY_CODE });
+
+  if (!data.product?.collections.nodes.some((collection) => collection.handle === PROCABIN_COLLECTION_HANDLE)) {
+    return undefined;
+  }
+
+  return mapProduct(data.product);
 }
 
-// Full detail for every result — see GET_ALL_PRODUCTS in queries.ts for
-// why (only getHeroProduct uses this; grids use getAllProductCards).
-export async function getAllProducts(first = 50): Promise<Product[]> {
-  const safeFirst = Math.min(Math.max(first, 1), 100);
-  const data = await shopifyFetch<{ products: { nodes: ShopifyProductNode[] } }>(GET_ALL_PRODUCTS, { first: safeFirst, country: SHOPIFY_COUNTRY_CODE });
-  return data.products.nodes.map(mapProduct);
+// Full detail is only used for the first collection product powering the
+// homepage. The collection parent is the catalog boundary.
+export async function getAllProducts(first = 250): Promise<Product[]> {
+  const safeFirst = Math.min(Math.max(first, 1), 250);
+  const data = await shopifyFetch<{ collection: { products: { nodes: ShopifyProductNode[] } } | null }>(
+    GET_CATALOG_PRODUCTS,
+    { handle: PROCABIN_COLLECTION_HANDLE, first: safeFirst, country: SHOPIFY_COUNTRY_CODE }
+  );
+  return data.collection?.products.nodes.map(mapProduct) ?? [];
 }
 
 // Card-weight product list for grids (related/discovery products).
-export async function getAllProductCards(first = 50): Promise<Product[]> {
-  const safeFirst = Math.min(Math.max(first, 1), 100);
-  const data = await shopifyFetch<{ products: { nodes: ShopifyProductCardNode[] } }>(GET_ALL_PRODUCT_CARDS, {
+export async function getAllProductCards(first = 250): Promise<Product[]> {
+  const safeFirst = Math.min(Math.max(first, 1), 250);
+  const data = await shopifyFetch<{ collection: { products: { nodes: ShopifyProductCardNode[] } } | null }>(GET_CATALOG_PRODUCT_CARDS, {
+    handle: PROCABIN_COLLECTION_HANDLE,
     first: safeFirst,
     country: SHOPIFY_COUNTRY_CODE,
   });
-  return data.products.nodes.map(mapProductCard);
+  return data.collection?.products.nodes.map(mapProductCard) ?? [];
 }
 
-export async function getCollectionByHandle(handle: string, first = 50) {
+export async function getCollectionByHandle(handle: string, first = 250) {
+  if (handle !== PROCABIN_COLLECTION_HANDLE) return undefined;
+
   const safeFirst = Math.min(Math.max(first, 1), 100);
   const data = await shopifyFetch<{
     collection: { id: string; handle: string; title: string; description: string; products: { nodes: ShopifyProductCardNode[] } } | null;
@@ -348,11 +348,12 @@ export async function getCollectionByHandle(handle: string, first = 50) {
 }
 
 // Sitemap-only: handle + real Shopify updatedAt, nothing else.
-export async function getAllProductHandles(first = 100): Promise<{ handle: string; updatedAt?: string }[]> {
-  const safeFirst = Math.min(Math.max(first, 1), 100);
-  const data = await shopifyFetch<{ products: { nodes: { handle: string; updatedAt: string }[] } }>(GET_ALL_PRODUCT_HANDLES, {
+export async function getAllProductHandles(first = 250): Promise<{ handle: string; updatedAt?: string }[]> {
+  const safeFirst = Math.min(Math.max(first, 1), 250);
+  const data = await shopifyFetch<{ collection: { products: { nodes: { handle: string; updatedAt: string }[] } } | null }>(GET_CATALOG_PRODUCT_HANDLES, {
+    handle: PROCABIN_COLLECTION_HANDLE,
     first: safeFirst,
     country: SHOPIFY_COUNTRY_CODE,
   });
-  return data.products.nodes.map((n) => ({ handle: n.handle, updatedAt: n.updatedAt }));
+  return data.collection?.products.nodes.map((n) => ({ handle: n.handle, updatedAt: n.updatedAt })) ?? [];
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { siteConfig } from "@/content/site-config";
+import { isNavigationItemActive } from "@/lib/utils/navigation";
 
 // Root cause of the previous bug: the header has `backdrop-blur`
 // (backdrop-filter), and per the CSS spec any ancestor with a
@@ -19,10 +20,12 @@ export function MobileMenu({
   open,
   onClose,
   triggerRef,
+  pathname,
 }: {
   open: boolean;
   onClose: () => void;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
+  pathname: string;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -89,16 +92,12 @@ export function MobileMenu({
 
   if (!mounted) return null;
 
-  const secondaryLinks = siteConfig.footerGroups
-    .flatMap((group) => group.links)
-    .filter((link) => !siteConfig.nav.some((navItem) => navItem.href === link.href));
-
   return createPortal(
     <>
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-[100] bg-ink/40 transition-opacity duration-300 ease-out motion-reduce:transition-none md:hidden ${
+        className={`fixed inset-0 z-[100] bg-cabin/60 backdrop-blur-sm transition-opacity duration-300 ease-out motion-reduce:transition-none md:hidden ${
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
@@ -110,18 +109,19 @@ export function MobileMenu({
         aria-modal="true"
         aria-label="Site menu"
         aria-hidden={!open}
-        className={`fixed inset-y-0 right-0 z-[110] flex w-[92vw] max-w-[380px] flex-col border-l border-line bg-paper shadow-[-16px_0_36px_-20px_rgba(42,37,33,0.35)] transition-transform duration-300 ease-out motion-reduce:transition-none md:hidden ${
+        inert={!open}
+        className={`fixed inset-y-0 right-0 z-[110] flex w-[92vw] max-w-[380px] flex-col border-l border-white/10 bg-cabin text-ivory shadow-cabin transition-transform duration-300 ease-out motion-reduce:transition-none md:hidden ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-line px-5">
-          <span className="font-display text-xl font-semibold tracking-tight text-ink">{siteConfig.brandName}</span>
+        <div className="flex h-[66px] shrink-0 items-center justify-between border-b border-white/10 px-5 sm:h-[70px]">
+          <span className="font-display text-lg font-bold tracking-[-0.045em] text-ivory">PRO<span className="font-medium text-plum-light">CABIN</span></span>
           <button
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="flex h-10 w-10 items-center justify-center text-ink-soft transition-colors hover:text-ink"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-lavender transition-colors hover:bg-white/10 hover:text-white"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="h-5 w-5">
               <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
@@ -131,41 +131,30 @@ export function MobileMenu({
 
         <nav className="flex flex-1 flex-col overflow-y-auto px-5 py-6">
           <ul className="flex flex-col gap-1">
-            {siteConfig.nav.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={onClose}
-                  className="block rounded-[10px] px-2 py-2.5 font-display text-[27px] leading-tight text-ink transition-colors hover:text-forest"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
+            {siteConfig.nav.map((item) => {
+              const isActive = isNavigationItemActive(item.href, pathname);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={onClose}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`relative block min-h-12 rounded-[10px] px-4 py-2.5 font-display text-[26px] font-semibold leading-tight tracking-[-0.04em] transition-colors before:absolute before:left-1 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-plum-light before:transition-opacity ${
+                      isActive
+                        ? "bg-white/[0.06] text-ivory before:opacity-100"
+                        : "text-lavender/80 before:opacity-0 hover:bg-white/5 hover:text-ivory"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
-
-          {secondaryLinks.length > 0 && (
-            <>
-              <div className="my-6 border-t border-line" aria-hidden="true" />
-              <ul className="flex flex-col gap-1">
-                {secondaryLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      onClick={onClose}
-                      className="block rounded-[10px] px-2 py-2 text-sm font-medium text-ink-soft transition-colors hover:text-ink"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
         </nav>
 
-        <div className="shrink-0 border-t border-line px-5 py-4">
-          <p className="text-xs leading-5 text-ink-soft">{siteConfig.announcement}</p>
+        <div className="shrink-0 border-t border-white/10 px-5 py-5">
+          <p className="text-xs leading-5 text-lavender/70">{siteConfig.announcement}</p>
         </div>
       </div>
     </>,

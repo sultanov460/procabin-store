@@ -4,7 +4,7 @@ export function BenefitsList({ benefits }: { benefits: string[] }) {
   if (benefits.length === 0) return null;
   return (
     <div className="mt-7 border-t border-line pt-6">
-      <p className="mb-4 text-sm font-semibold text-ink">Why it earns a place in your kitchen</p>
+      <p className="mb-4 text-sm font-semibold text-ink">Product highlights</p>
       <ul className="grid gap-x-5 gap-y-3 sm:grid-cols-2">
         {benefits.map((b) => (
           <li key={b} className="flex items-start gap-2.5 text-sm leading-6 text-ink-soft">
@@ -20,7 +20,7 @@ export function BenefitsList({ benefits }: { benefits: string[] }) {
 export function SpecsTable({ specs }: { specs: ProductSpec[] }) {
   if (specs.length === 0) return null;
   return (
-    <div className="rounded-[16px] border border-line bg-paper/60 p-5">
+    <div className="rounded-[16px] border border-line/80 bg-paper/65 p-5 sm:p-6">
       <h2 className="mb-3 text-lg">Specifications</h2>
       <dl className="divide-y divide-line text-sm">
         {specs.map((s) => (
@@ -44,7 +44,7 @@ export function TrustInfo() {
   return (
     <div className="mt-4 grid gap-3">
       {items.map((i) => (
-        <div key={i.title} className="rounded-[14px] border border-line bg-white/45 px-4 py-3.5">
+        <div key={i.title} className="rounded-[14px] border border-line/80 bg-white/50 px-4 py-3.5">
           <p className="text-sm font-semibold text-ink">{i.title}</p>
           <p className="mt-1 text-xs leading-5 text-ink-soft">{i.body}</p>
         </div>

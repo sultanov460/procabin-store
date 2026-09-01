@@ -5,6 +5,17 @@
 @layer base {
   :root {
     color-scheme: light;
+    --color-ivory: 245 242 237;
+    --color-cabin: 28 26 32;
+    --color-graphite: 42 40 47;
+    --color-graphite-soft: 98 94 104;
+    --color-plum: 113 96 117;
+    --color-plum-dark: 87 71 91;
+    --color-plum-light: 153 139 157;
+    --color-lavender: 215 208 218;
+    --color-mist: 233 229 232;
+    --color-metal: 170 165 162;
+    --color-line: 220 214 216;
   }
 
   * {
@@ -12,55 +23,94 @@
   }
 
   body {
-    @apply min-w-0 bg-paper text-ink font-body antialiased;
+    @apply min-w-0 overflow-x-hidden bg-ivory font-body text-cabin antialiased;
+    background-image:
+      radial-gradient(circle at 10% -6%, rgba(113, 96, 117, 0.085), transparent 30rem),
+      linear-gradient(180deg, rgba(255,255,255,.12), transparent 34rem);
   }
 
   h1, h2, h3, h4 {
-    @apply font-display text-ink;
+    @apply font-display font-semibold tracking-[-0.035em] text-cabin;
   }
 
   ::selection {
-    @apply bg-forest/20;
+    @apply bg-plum/20;
   }
 
   :focus-visible {
-    outline: 2px solid #3E5641;
+    outline: 2px solid rgb(var(--color-plum));
     outline-offset: 2px;
   }
 }
 
 @layer components {
   .container-page {
-    @apply mx-auto w-full max-w-container px-5 sm:px-8;
+    @apply mx-auto w-full max-w-container px-4 min-[375px]:px-5 sm:px-8;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center rounded-pill px-6 py-3 text-sm font-semibold transition-all duration-150 active:scale-[0.97];
+    @apply inline-flex min-h-11 items-center justify-center rounded-pill px-6 py-3 text-sm font-semibold tracking-[-0.01em] transition-[transform,background-color,border-color,color,box-shadow] duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] motion-reduce:transform-none motion-reduce:transition-none;
   }
 
   .btn-primary {
-    @apply btn bg-forest text-paper shadow-[0_8px_20px_-12px_rgba(46,65,50,0.7)] hover:bg-forest-dark active:bg-forest-dark;
+    @apply btn bg-cabin text-ivory shadow-lift hover:bg-graphite hover:shadow-soft active:bg-graphite;
   }
 
   .btn-secondary {
-    @apply btn bg-transparent text-ink border border-ink/20 hover:border-ink/40;
+    @apply btn border border-cabin/15 bg-white/30 text-cabin hover:border-cabin/30 hover:bg-white/70;
   }
 
   .btn-clay {
-    @apply btn bg-clay text-paper hover:bg-clay-dark;
+    @apply btn bg-plum text-ivory hover:bg-plum-dark;
   }
 
   .card {
-    @apply rounded-card bg-sand/60 border border-line;
+    @apply rounded-card border border-line/90 bg-white/50 shadow-soft;
   }
 
   .eyebrow {
-    @apply text-xs font-semibold uppercase tracking-[0.14em] text-forest;
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-plum;
+  }
+
+  .page-intro {
+    @apply border-b border-line/80 bg-white/25;
+  }
+
+  .policy-shell {
+    @apply container-page max-w-3xl py-14 sm:py-16 md:py-20;
+  }
+
+  .policy-content {
+    @apply mt-10 space-y-9 text-[15px] leading-7 text-graphite-soft;
+  }
+
+  .policy-content > section {
+    @apply border-t border-line/80 pt-7 first:border-0 first:pt-0;
+  }
+
+  .policy-content h2 {
+    @apply mb-3 text-xl text-cabin;
   }
 
   .reveal {
     animation: rise 0.55s ease-out both;
   }
+}
+
+@keyframes ambientDrift {
+  0%, 100% {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+    opacity: 0.68;
+  }
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.06);
+    opacity: 0.9;
+  }
+}
+
+.ambient-orb {
+  animation: ambientDrift 14s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes rise {
@@ -89,5 +139,10 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .ambient-orb {
+    animation: none;
+    will-change: auto;
   }
 }

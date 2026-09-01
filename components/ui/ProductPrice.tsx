@@ -3,7 +3,7 @@ import type { Money } from "@/lib/types/product";
 
 // Single place that renders price + compare-at price + savings badge, so
 // the "only show a discount when compareAtPrice > price" rule and the
-// Velora badge styling live in exactly one spot — used by ProductCard,
+// ProCabin badge styling live in exactly one spot — used by ProductCard,
 // BuyBox, and anywhere else (related/recommended products) that shows a
 // price. `size="card"` is compact for grid cards; `size="detail"` matches
 // the larger product-page price row. Wraps cleanly on narrow cards
@@ -28,12 +28,12 @@ export function ProductPrice({
   const isDetail = size === "detail";
 
   return (
-    <div className={`flex flex-wrap items-center ${isDetail ? "gap-3" : "gap-x-2 gap-y-1"} ${className}`}>
+    <div className={`flex flex-wrap items-baseline ${isDetail ? "gap-x-3 gap-y-2" : "gap-x-2.5 gap-y-1.5"} ${className}`}>
       <span
         className={
           isDetail
             ? "font-mono text-[1.65rem] font-medium tracking-tight text-ink"
-            : "font-mono text-sm font-semibold text-ink"
+            : "font-mono text-base font-semibold tracking-[-0.02em] text-ink"
         }
       >
         {formatMoney(price)}
@@ -43,7 +43,7 @@ export function ProductPrice({
           className={
             isDetail
               ? "font-mono text-sm text-ink-soft/70 line-through"
-              : "font-mono text-xs text-ink-soft/70 line-through"
+              : "font-mono text-[12px] text-ink-soft/65 line-through decoration-ink-soft/45"
           }
         >
           {formatMoney(compareAtPrice!)}
@@ -54,7 +54,7 @@ export function ProductPrice({
           className={
             isDetail
               ? "rounded-pill bg-forest/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-forest"
-              : "rounded-pill bg-forest/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-forest"
+              : "rounded-pill border border-plum/15 bg-plum/[0.07] px-2 py-0.5 text-[10px] font-semibold tracking-[0.02em] text-plum-dark"
           }
         >
           Save {formatMoney(savings)}

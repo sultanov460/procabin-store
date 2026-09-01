@@ -1,19 +1,23 @@
 import type { Metadata } from "next";
-import { siteConfig } from "@/content/site-config";
+import { getSupportEmail } from "@/content/support-config";
 import { policiesConfig } from "@/content/policies-config";
 
 export const metadata: Metadata = {
   title: "Returns & Refunds",
   description: "Our return eligibility, process, and refund policy.",
+  alternates: { canonical: "/returns" },
 };
 
 export default function ReturnsPage() {
+  const supportEmail = getSupportEmail();
+
   return (
-    <div className="container-page max-w-2xl py-16">
-      <h1 className="text-4xl">Returns & Refunds</h1>
+    <div className="policy-shell">
+      <p className="eyebrow mb-3">Customer care</p>
+      <h1 className="text-4xl sm:text-5xl">Returns & Refunds</h1>
       <p className="mt-2 text-sm text-ink-soft">Last updated: {policiesConfig.lastUpdated}</p>
 
-      <div className="mt-10 space-y-10 text-sm leading-relaxed text-ink-soft">
+      <div className="policy-content">
         <section>
           <h2 className="mb-2 text-lg text-ink">Return window</h2>
           <p>
@@ -25,11 +29,11 @@ export default function ReturnsPage() {
         <section>
           <h2 className="mb-2 text-lg text-ink">How to request a return</h2>
           <p>
-            {siteConfig.supportEmail ? (
+            {supportEmail ? (
               <>
                 Contact us at{" "}
-                <a href={`mailto:${siteConfig.supportEmail}`} className="font-medium text-forest underline">
-                  {siteConfig.supportEmail}
+                <a href={`mailto:${supportEmail}`} className="font-medium text-forest underline">
+                  {supportEmail}
                 </a>
               </>
             ) : (
@@ -95,11 +99,11 @@ export default function ReturnsPage() {
         <section>
           <h2 className="mb-2 text-lg text-ink">Support</h2>
           <p>
-            {siteConfig.supportEmail ? (
+            {supportEmail ? (
               <>
                 We&apos;re happy to help with any return questions — reach us at{" "}
-                <a href={`mailto:${siteConfig.supportEmail}`} className="font-medium text-forest underline">
-                  {siteConfig.supportEmail}
+                <a href={`mailto:${supportEmail}`} className="font-medium text-forest underline">
+                  {supportEmail}
                 </a>
                 .
               </>
